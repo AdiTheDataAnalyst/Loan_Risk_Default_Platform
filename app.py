@@ -100,6 +100,9 @@ def applicant_features(portfolio: pd.DataFrame, values: dict) -> pd.DataFrame:
 
 
 def render_model_comparison(portfolio: pd.DataFrame, values: dict) -> None:
+    st.markdown("""<div class="hero"><div class="eyebrow">Model validation workspace</div>
+    <h1>Model Comparison</h1><p>Compare default predictions and performance across models.</p></div>""", unsafe_allow_html=True)
+    st.write("")
     if portfolio.empty or "Default" not in portfolio:
         st.error("The portfolio dataset with a Default column is required to compare models.")
         return
@@ -159,6 +162,10 @@ def render_model_comparison(portfolio: pd.DataFrame, values: dict) -> None:
             for value in comparison["Default probability"]
         ],
     ))
+    prediction_axis_max = min(
+        1.0,
+        max(0.6, np.ceil((comparison["Default probability"].max() + 0.15) * 10) / 10),
+    )
     prediction_chart.update_layout(
         height=360,
         paper_bgcolor="white",
@@ -167,10 +174,20 @@ def render_model_comparison(portfolio: pd.DataFrame, values: dict) -> None:
         showlegend=False,
         yaxis=dict(
             tickformat=".0%",
-            range=[0, min(1, max(0.6, comparison["Default probability"].max() + 0.18))],
-            title="Probability of loan default",
+            tickmode="linear",
+            tick0=0,
+            dtick=0.1,
+            range=[0, prediction_axis_max],
+            title=dict(text="Probability of loan default", font=dict(color="#172033")),
+            tickfont=dict(color="#172033", size=12),
+            showticklabels=True,
         ),
-        margin=dict(l=30, r=30, t=45, b=30),
+        xaxis=dict(
+            title=dict(text="Model", font=dict(color="#172033")),
+            tickfont=dict(color="#172033", size=12),
+            showticklabels=True,
+        ),
+        margin=dict(l=55, r=30, t=45, b=65),
     )
     st.plotly_chart(prediction_chart, use_container_width=True, config={"displayModeBar": False})
 
@@ -192,9 +209,23 @@ def render_model_comparison(portfolio: pd.DataFrame, values: dict) -> None:
         paper_bgcolor="white",
         plot_bgcolor="white",
         font_color="#172033",
-        yaxis=dict(tickformat=".0%", range=[0, 1.18], title="Score"),
+        xaxis=dict(
+            title=dict(text="Model", font=dict(color="#172033")),
+            tickfont=dict(color="#172033", size=12),
+            showticklabels=True,
+        ),
+        yaxis=dict(
+            tickformat=".0%",
+            tickmode="linear",
+            tick0=0,
+            dtick=0.1,
+            range=[0, 1.18],
+            title=dict(text="Score", font=dict(color="#172033")),
+            tickfont=dict(color="#172033", size=12),
+            showticklabels=True,
+        ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
-        margin=dict(l=30, r=30, t=70, b=30),
+        margin=dict(l=65, r=35, t=70, b=70),
     )
     st.plotly_chart(performance_chart, use_container_width=True, config={"displayModeBar": False})
 
